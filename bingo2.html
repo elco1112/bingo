@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bingo2</title>
+
+    <style>
+        
+        h1{  
+            text-align: center;
+            color: orangered;
+        }
+        #bingo{ 
+            display: grid; 
+            grid-template-columns: repeat(5, 100px); /* repeat중요 */
+            gap: 6px;
+            margin: 50px auto;
+            width: max-content;
+        }
+        #bingo button{
+            width: 100px; height: 100px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .checked{background-color: greenyellow;}
+        .bingo-line{background-color: violet;}
+
+        #result{
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>✨Bingo Game✨</h1>
+    <div id="bingo"></div>
+    <div id="result"></div>
+
+    <script>
+        let bingo = document.getElementById("bingo");           // 25칸을 넣을 공간 변수생성해서 가져오기
+        let result = document.getElementById("result");         // 빙고완성 횟수 카운트 및 완성 텍스트 나오게 할 공간 변수지정
+        let buttons = [];                                       // 배열생성
+        game();                                                 // 게임실행
+
+        function game(){                                        // 게임실행함수
+            let nums = Array.from({length: 25},(_,i) => i+1);   // 길이가 25개인 객체 생성
+            shuffle(nums);                                      // 25개 칸에 들어갈 숫자를 섞어주는 변수
+
+            for(let i=0; i<25; i++){                            // 25개의 버튼 만들기
+                let btn = document.createElement("button");     
+                btn.textContent = nums[i];                      // 버튼에 들어갈 숫자 출력
+                bingo.appendChild(btn);                         // 25칸을 넣을 공간 안에 버튼 넣기
+
+                let row = Math.floor(i/5);                      // i가 0~4일때 0번째줄,1번째줄 ~ 4번째 마지막줄 까지 5개 행 생성
+                if(!buttons[row]) buttons[row] = [];            // 행이 없다면 행을 먼저 만들어라
+                buttons[row].push(btn);                         // 방금 만든 btn을 배열에 넣기
+
+                btn.addEventListener("click", () => {           // 버튼클릭시
+                    btn.classList.toggle("checked");            // 토글로 실행하고 checked를 가져옴
+                    checkBingo();                               // 빙고체크확인 함수
+                });
+            }
+        }
+
+        function shuffle(arr){                                  // 숫자를 랜덤으로 섞는 함수 실행(구조분해할당)
+            for(let i=arr.length-1; i>0; i--){                  // 배열의 가장 마지막 부분 부터 i가 0보다 클 때 까지 실행하고, 한바퀴 돌 때 마다 i를 1씩 줄여라
+                let j = Math.ceil(Math.random()*i);             // 위치값 1~25중 랜덤으로 하나선택
+                [arr[i],arr[j]] = [arr[j],arr[i]];              // 서로 바꿔줄 위치값
+            }
+        }
+
+        function checkBingo(){                                                      // 방고가 맞는지 확인
+            let bingoCount = 0;                                                     // 빙고횟수 초가값 지정
+            buttons.flat().forEach(item => item.classList.remove("bingo-line"));    // 배열을 flat으로 풀어주고 체크를 토글로 풀었을 때 횟수 돌아가고 색상변경
+
+            for(let r=0; r<5; r++){                                                 // 가로빙고검사, 0~4까지 5번반복
+                if(buttons[r].every(b => b.classList.contains("checked"))){         // r번째 줄에 있는 버튼 5개가 전부 checked라는 클래스를 가지고 있다면 빙고라인 클래스 속성 추가
+                bingoCount++;                                                       // 맞다면 횟수 증가
+                buttons[r].forEach(b => b.classList.add("bingo-line"));
+                }
+            }
+
+            for(let c=0; c<5; c++){
+                let col = [];                                                       // 배열생성
+                for(let r=0; r<5; r++){
+                    col.push(buttons[r][c]);                                        // 변수r 변수c 빈배열에 버튼rc배열 추가
+                }
+                if(col.every(b => b.classList.contains("checked"))){
+                    bingoCount++;
+                    col.forEach(b => b.classList.add("bingo-line"));
+                }
+            }
+
+            let d1 = [], d2 = [];                                                   // 배열생성 2개
+            for(let i=0; i<5; i++){
+                d1.push(buttons[i][[i]]);                                           // 변수d1 d2 빈배열에 버튼i/i 추가 버튼i/4-i 추가
+                d2.push(buttons[i][4-i]);
+            }
+            if(d1.every(b => b.classList.contains("checked"))){
+                bingoCount++;
+                d1.forEach(b => b.classList.add("bingo-line"));
+            }
+            if(d2.every(b => b.classList.contains("checked"))){
+                bingoCount++;
+                d2.forEach(b => b.classList.add("bingo-line"));
+            }
+            result.textContent = `현재 빙고 : ${bingoCount} 줄`;
+            if(bingoCount >= 5){
+                result.textContent = "✨빙고 완성🎉";
+            }
+        }
+    </script>
+</body>
+</html>
